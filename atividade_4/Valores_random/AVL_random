@@ -1,0 +1,90 @@
+import random
+
+class No:
+    """Representa um nó na Árvore AVL."""
+    def __init__(self, chave):
+        self.chave = chave
+        self.esquerda = None
+        self.direita = None
+        self.altura = 1
+
+class AVLTree:
+    """
+    Implementa uma árvore de busca auto-balanceada (AVL).
+    """
+    def obter_altura(self, no):
+        if not no: return 0
+        return no.altura
+
+    def calcular_fator_balanceamento(self, no):
+        if not no: return 0
+        return self.obter_altura(no.esquerda) - self.obter_altura(no.direita)
+
+    def _rotacao_direita(self, z):
+        y = z.esquerda
+        T3 = y.direita
+        y.direita = z
+        z.esquerda = T3
+        z.altura = 1 + max(self.obter_altura(z.esquerda), self.obter_altura(z.direita))
+        y.altura = 1 + max(self.obter_altura(y.esquerda), self.obter_altura(y.direita))
+        return y
+
+    def _rotacao_esquerda(self, z):
+        y = z.direita
+        T2 = y.esquerda
+        y.esquerda = z
+        z.direita = T2
+        z.altura = 1 + max(self.obter_altura(z.esquerda), self.obter_altura(z.direita))
+        y.altura = 1 + max(self.obter_altura(y.esquerda), self.obter_altura(y.direita))
+        return y
+
+    def inserir(self, raiz, chave):
+        if not raiz:
+            return No(chave)
+        elif chave < raiz.chave:
+            raiz.esquerda = self.inserir(raiz.esquerda, chave)
+        else:
+            raiz.direita = self.inserir(raiz.direita, chave)
+
+        raiz.altura = 1 + max(self.obter_altura(raiz.esquerda), self.obter_altura(raiz.direita))
+        balance = self.calcular_fator_balanceamento(raiz)
+
+        if balance > 1 and chave < raiz.esquerda.chave:
+            return self._rotacao_direita(raiz)
+        if balance < -1 and chave > raiz.direita.chave:
+            return self._rotacao_esquerda(raiz)
+        if balance > 1 and chave > raiz.esquerda.chave:
+            raiz.esquerda = self._rotacao_esquerda(raiz.esquerda)
+            return self._rotacao_direita(raiz)
+        if balance < -1 and chave < raiz.direita.chave:
+            raiz.direita = self._rotacao_direita(raiz.direita)
+            return self._rotacao_esquerda(raiz)
+        return raiz
+
+    def visualizar_arvore(self, no, nivel=0, prefixo="Raiz:"):
+        """Imprime a estrutura da árvore de forma visual."""
+        if no is not None:
+            print(" " * (nivel * 4) + prefixo + str(no.chave) + f" (h={no.altura}, fb={self.calcular_fator_balanceamento(no)})")
+            if no.esquerda is not None or no.direita is not None:
+                self.visualizar_arvore(no.esquerda, nivel + 1, "E---")
+                self.visualizar_arvore(no.direita, nivel + 1, "D---")
+
+if __name__ == "__main__":
+    print("======================================================")
+    print("DEMONSTRAÇÃO 3: ÁRVORE COM 20 VALORES RANDÔMICOS")
+    print("======================================================")
+
+    arvore_random = AVLTree()
+    raiz_random = None
+    
+   
+    numeros_aleatorios = random.sample(range(1, 101), 20)
+    
+    print(f"Inserindo a seguinte sequência de números: \n{numeros_aleatorios}\n")
+
+    for chave in numeros_aleatorios:
+        raiz_random = arvore_random.inserir(raiz_random, chave)
+
+    print("\n--- Árvore AVL Final (Após todas as inserções) ---")
+    arvore_random.visualizar_arvore(raiz_random)
+    print("\nObserve como a árvore final está balanceada (fator de balanceamento entre -1 e 1) e com altura mínima.")
